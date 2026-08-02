@@ -18,7 +18,9 @@ services:
       retries: 10
 
   rails_container:
-    build: interview_app
+    build:
+      context: interview_app
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     environment:
@@ -31,14 +33,24 @@ services:
     depends_on:
       mysql_container:
         condition: service_healthy
+    volumes:
+      - ./interview_app:/rails
+      - /rails/vendor/bundle
 
   next_container:
-    build: meeting_front
+    build:
+      context: meeting_front
+      dockerfile: Dockerfile.dev
     ports:
       - "3001:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://rails_container:3000
     depends_on:
       - rails_container
+
+    volumes:
+      - ./meeting_front:/app
+      - /app/node_modules
+
 volumes:
   my_sql:
