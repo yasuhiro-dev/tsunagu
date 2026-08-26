@@ -30,7 +30,9 @@ services:
       DATABASE_PASSWORD: password
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       TZ: Asia/Tokyo
+      # ローカル時のURLの遷移先を指定
       FRONTEND_URL: http://localhost:3001
+      BACKEND_URL: http://localhost:3000
     depends_on:
       mysql_container:
         condition: service_healthy
