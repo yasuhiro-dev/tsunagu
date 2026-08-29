@@ -4,10 +4,11 @@
 
 既存の日程調整サービスは「先着順」が基本ですが、Tsunagu は **全家庭を必ず割り当てる** ことを前提に、「兄弟は連続した枠に」「特別支援学級は通常学級と連続した枠に」といった学校現場特有の制約を同時に満たすスケジューリングアルゴリズムを実装しています。現役小学校教員としての実務経験をもとに設計しました。
 
+**登録不要、ワンクリックで教師・保護者（提出済み/提出前）・管理者の4ロールを試せます。** アプリのトップページにあるデモボタンから、実際の画面・操作をそのまま体験いただけます。
+
 アプリケーションや実装内容は以下から確認できます。
 
-- アプリケーション: <準備中（デプロイ後にURLを記載）>
-- API: <準備中（デプロイ後にURLを記載）>
+- アプリケーション: https://tsunagu-app.com
 - GitHub (フロントエンド): <https://github.com/yasuhiro-dev/tsunagu-frontend>
 - GitHub (バックエンド): <https://github.com/yasuhiro-dev/tsunagu-backend>
 
@@ -97,11 +98,18 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 ## 本番環境
 
-本番環境では、Next.js と Rails API をそれぞれ ECS Fargate サービスとして分けて運用しています。
+本番環境では、フロントエンド（Next.js）とバックエンド（Rails API）を別々の形で運用し、CloudFrontが1つのドメイン（`tsunagu-app.com`）への入り口として両者を束ねています。
+
+- Next.js は静的サイトとしてビルドし、**S3** でホスティング
+- Rails API は Docker イメージ化し、**ECS Fargate** 上のコンテナとして実行
+- **CloudFront** がパスベースルーティングで振り分け（`/api/*` → Rails API、それ以外 → Next.js）
 
 - Route 53 - DNS
 - ACM - HTTPS証明書
-- ECS Fargate - Next.js / Rails API
+- CloudFront - CDN配信・パスベースルーティングによるフロント/バックエンドの振り分け
+- S3 - Next.js静的ファイルのホスティング
+- ALB (Application Load Balancer) - Rails APIへのリクエストをECS Fargateタスクへ分散
+- ECS Fargate - Rails API のコンテナ実行
 - Amazon RDS for MySQL - データベース
 - ECR - Dockerイメージ管理
 - GitHub Actions - CI/CD
@@ -114,11 +122,10 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 #### リクエストの流れ
 
-1. ユーザーは独自ドメインにHTTPSでアクセスします。
-2. (CloudFront経由でNext.jsのコンテンツを配信します。)
-3. Next.js のサーバー側処理が、必要に応じて Rails API へリクエストを送ります。
-4. ALB が Rails API の ECS Fargate タスクへリクエストを転送します。
-<!-- 実際の構成（ALB構成、Next.jsのホスティング方法など）に合わせて修正してください -->
+1. ユーザーは独自ドメイン（`tsunagu-app.com`）にHTTPSでアクセスします。
+2. リクエストはCloudFrontに届き、パスパターンによって振り分けられます。
+3. `/api/*` にマッチするリクエストは、ALB経由でECS Fargate上のRails APIコンテナへ転送されます。
+4. それ以外のリクエストは、S3にホスティングされているNext.jsの静的ファイルがそのまま返されます。
 
 #### 外部連携
 
@@ -129,7 +136,12 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 #### デプロイの流れ
 
-`main` ブランチへの push を GitHub Actions が検知し、Docker イメージを ECR へ push したうえで、ECS サービスへデプロイします。
+`main` ブランチへの push を GitHub Actions が検知し、以下を実行します。
+
+- フロントエンド: Next.jsを静的ビルドし、S3へアップロード
+- バックエンド: Dockerイメージを ECR へ push したうえで、ECS Fargate サービスへデプロイ
+
+いずれの場合もCloudFrontのキャッシュを適宜無効化（インバリデーション）し、最新の内容が反映されるようにしています。
 
 ## ER図
 
@@ -182,15 +194,18 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 ## 使用技術 (インフラ・その他)
 
-| 技術                                                                                            | 用途                               |
-| ----------------------------------------------------------------------------------------------- | ---------------------------------- |
-| [AWS ECS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html) | Next.js / Rails API のコンテナ実行 |
-| [Amazon RDS for MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html)  | 本番DB                             |
-| [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html)              | DNS                                |
-| [ACM](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html)                       | HTTPS証明書                        |
-| [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html)                  | Dockerイメージ管理                 |
-| [GitHub Actions](https://docs.github.com/en/actions)                                            | CI/CD                              |
-| [Docker / Docker Compose](https://docs.docker.com/)                                             | 開発環境                           |
+| 技術                                                                                                                     | 用途                                                  |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)                                          | Next.js 静的ファイルのホスティング                    |
+| [AWS ECS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)                          | Rails API のコンテナ実行                              |
+| [ALB (Application Load Balancer)](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) | Rails API へのリクエストをECS Fargateタスクへ分散     |
+| [Amazon CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html)                | CDN配信・パスベースルーティングによるS3/ALBの振り分け |
+| [Amazon RDS for MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html)                           | 本番DB                                                |
+| [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html)                                       | DNS                                                   |
+| [ACM](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html)                                                | HTTPS証明書                                           |
+| [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html)                                           | Dockerイメージ管理                                    |
+| [GitHub Actions](https://docs.github.com/en/actions)                                                                     | CI/CD                                                 |
+| [Docker / Docker Compose](https://docs.docker.com/)                                                                      | 開発環境                                              |
 
 ## 画面
 
@@ -312,6 +327,6 @@ CIでは RSpec（22ファイル / リクエストスペック14・割り当て�
 
 ## 各種リンク
 
-- アプリケーション: <準備中（デプロイ後にURLを記載）>
+- アプリケーション: https://tsunagu-app.com
 - GitHub (フロントエンド): <https://github.com/yasuhiro-dev/tsunagu-frontend>
 - GitHub (バックエンド): <https://github.com/yasuhiro-dev/tsunagu-backend>
