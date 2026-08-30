@@ -226,12 +226,12 @@ erDiagram
 	Schedule o|--}o Child : "この期間の児童が対象になる"
 	Child ||--}o ChildClassRoom : "児童が所属クラスを持つ"
 	ClassRoom ||--}o ChildClassRoom : "クラスが所属児童を持つ"
-	Teacher ||--}o ClassRoom : "教員がクラスを持つ"
+	Teacher ||--}o ClassRoom :  "担任する"
 	Family ||--}o FamilyUnavailability : "保護者が不可日時を提出する"
 	User ||--|o Family : "保護者アカウントに紐づく"
 	MeetingSlot ||--}o FamilyUnavailability : "面談枠が不可日時の対象になる"
 	Teacher ||--}o MeetingSlot : "教員が面談枠を持つ"
-	Schedule ||--}o MeetingSlot : "この期間が面談枠を含む"
+	Schedule ||--}o MeetingSlot : "含む"
 	User o|--|o Teacher : "教員アカウントに紐づく"
 ```
 
