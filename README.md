@@ -147,9 +147,73 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ## ER図
 
-<!-- ER図の画像を docs/images/readme/er-diagram.png のように配置してリンクしてください -->
-
-![Tsunagu ER図](docs/images/readme/er-diagram.png)
+```mermaid
+erDiagram
+direction TB
+Assignment {
+}
+Child {
+string name
+string name_kana
+}
+ChildClassRoom {
+}
+ClassRoom {
+string classname
+integer grade
+integer room_type
+integer section
+}
+Family {
+string name
+string name_kana
+boolean submitted
+}
+FamilyUnavailability {
+}
+MeetingSlot {
+datetime end_at
+datetime start_at
+integer status
+}
+Schedule {
+datetime deadline_at
+string name
+integer year
+}
+Teacher {
+string name
+string name_kana
+integer role
+}
+User {
+string email_address
+text google_access_token
+text google_refresh_token
+datetime google_token_expires_at
+string name
+string password_digest
+string reset_digest
+datetime reset_sent_at
+string role
+}
+Child ||--}o Assignment : ""
+MeetingSlot ||--}o Assignment : ""
+Family ||--}o Child : ""
+Schedule o|--}o Child : ""
+Child ||--}o ChildClassRoom : ""
+Child o|..}o ClassRoom : ""
+ClassRoom ||--}o ChildClassRoom : ""
+Teacher ||--}o ClassRoom : ""
+Family ||--}o FamilyUnavailability : ""
+User ||--|o Family : ""
+MeetingSlot ||--}o FamilyUnavailability : ""
+Teacher ||--}o MeetingSlot : ""
+Schedule ||--}o MeetingSlot : ""
+Schedule o|..}o Family : ""
+Schedule o|..}o FamilyUnavailability : ""
+User o|--|o Teacher : ""
+```
 
 | テーブル                  | 役割                                                                           |
 | ------------------------- | ------------------------------------------------------------------------------ |
