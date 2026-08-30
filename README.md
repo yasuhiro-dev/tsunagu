@@ -221,7 +221,7 @@ erDiagram
 		datetime google_token_expires_at
 	}
 	Child ||--}o Assignment : "児童が割り当て記録を持つ"
-	MeetingSlot ||--}o Assignment : "割り当てを持つ"
+	MeetingSlot ||--}o Assignment : ""
 	Family ||--}o Child : "保護者が児童を登録する"
 	Schedule o|--}o Child : "この期間の児童が対象になる"
 	Child ||--}o ChildClassRoom : "児童が所属クラスを持つ"
@@ -231,7 +231,7 @@ erDiagram
 	User ||--|o Family : "保護者アカウントに紐づく"
 	MeetingSlot ||--}o FamilyUnavailability : "面談枠が不可日時の対象になる"
 	Teacher ||--}o MeetingSlot : "教員が面談枠を持つ"
-	Schedule ||--}o MeetingSlot : "含む"
+	Schedule ||--}o MeetingSlot : ""
 	User o|--|o Teacher : "教員アカウントに紐づく"
 ```
 
