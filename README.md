@@ -149,7 +149,7 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ```mermaid
 erDiagram
-	direction LR
+	direction TB
 		Assignment {
 		integer id PK
 		integer child_id FK
