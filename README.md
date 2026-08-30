@@ -34,8 +34,8 @@
 学校現場では、保護者との個人面談の日程調整を教員が手作業で行っています。実際に現場で感じていた課題は次の通りです。
 
 - **手作業での割り振りは大きな負担**：全家庭分の面談を、様々な条件を考慮しながら組み立てる必要がある
-- **1つの家庭が複数の担任と面談するケースがある**：兄弟が別クラスの場合や、通常学級と特別支援学級の両方に籍を持つ児童の場合、保護者1人が複数の担任と面談するため、担任同士で連続した時間に調整する必要がある
-- **既存サービスは「先着順」が基本**：ITに不慣れな家庭や忙しい家庭が不利になりやすく、公平性に欠ける。また上記のような兄弟・特別支援学級を考慮した調整機能を持つサービスが存在しない
+- **複数の担任との調整が必要な家庭がある**：兄弟が別クラス、または通常学級と特別支援学級に在籍している場合、担任同士で連続した時間帯に調整する必要がある
+- **既存サービスは「先着順」が基本**：ITに不慣れな家庭や忙しい家庭が不利になりやすく、公平性に欠ける
 
 Tsunagu は「全家庭を必ず割り当てる」「学校特有の制約条件を尊重する」という前提を置き、これらを同時に満たすスケジューリングアルゴリズムを軸に機能・データ設計を行っています。
 
@@ -43,29 +43,31 @@ Tsunagu は「全家庭を必ず割り当てる」「学校特有の制約条件
 
 ### 共通
 
-- ユーザー登録（保護者）/ ログイン / ログアウト
+- ログイン / ログアウト
 - パスワードリセット（メールで再設定リンクを送信）
-- ロール（保護者 / 教員 / 管理者）に応じた画面・APIの出し分け
+- ロール（保護者 / 教員 / 管理者）に応じて表示する画面・利用できるAPIを制限
 
 ### 保護者
 
-- 児童の複数登録（兄弟・特別支援学級との併籍に対応）
-- 面談不可日時の提出・修正
+- 児童の複数登録（兄弟・特別支援学級への在籍に対応）
+- 面談不可日時の提出
 - 確定した面談日時の確認
-- 面談日時のGoogleカレンダー登録（ワンクリック）
+- 面談日時のGoogleカレンダー登録（Googleアカウント連携後、ワンクリックで追加）
 
 ### 教員
 
-- **面談枠の自動割り当て**（制約充足アルゴリズム）
+- **面談枠の自動割り当て**
 - 未割当児童の一覧確認
-- 個別の手動割り当て（自動割り当てで埋まらなかった家庭を教員が直接指定）
-- 面談確定メールの自動送信（Gmail API / 割り当て確定と同時に保護者へ通知）
+- 個別の手動割り当て（未割当の家庭を教員が直接指定）
+- 面談確定メールの自動送信（Gmail API / 新規割り当て時に保護者へ自動通知）
 - 面談スケジュールのPDF出力
 - Googleアカウント連携（OAuth 2.0）
 
 ### 管理者
 
 - 教員・保護者アカウントの登録・編集・削除（検索 / 一括削除 / ページネーション）
+- 面談枠の一括自動割り当て
+- 提出締切日の設定
 - クラス別の割り当て状況の可視化（グラフ）
 
 ## 開発環境 (フロントエンド)
@@ -74,8 +76,8 @@ Tsunagu は「全家庭を必ず割り当てる」「学校特有の制約条件
 
 ```
 docker compose up -d
-docker compose exec next npm install
-docker compose exec next npm run dev
+docker compose exec next_container npm install
+docker compose exec next_container npm run dev
 ```
 
 - URL: <http://localhost:3001>
@@ -89,8 +91,8 @@ docker compose exec next npm run dev
 
 ```
 docker compose up -d
-docker compose exec rails bundle install
-docker compose exec rails bin/rails db:create db:migrate db:seed
+docker compose exec rails_container bundle install
+docker compose exec rails_container bin/rails db:create db:migrate db:seed
 ```
 
 - Rails API: <http://localhost:3000>
@@ -98,17 +100,17 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 ## 本番環境
 
-本番環境では、フロントエンド（Next.js）とバックエンド（Rails API）を別々の形で運用し、CloudFrontが1つのドメイン（`tsunagu-app.com`）への入り口として両者を束ねています。
+本番環境では、フロントエンド（Next.js）とバックエンド（Rails API）を別々の形で運用し、CloudFrontが1つのドメイン（`tsunagu-app.com`）への入り口となり、両者を繋いでいます。
 
-- Next.js は静的サイトとしてビルドし、**S3** でホスティング
+- Next.js は静的サイトとしてビルドし、**S3** に置いて配信
 - Rails API は Docker イメージ化し、**ECS Fargate** 上のコンテナとして実行
 - **CloudFront** がパスベースルーティングで振り分け（`/api/*` → Rails API、それ以外 → Next.js）
 
 - Route 53 - DNS
 - ACM - HTTPS証明書
 - CloudFront - CDN配信・パスベースルーティングによるフロント/バックエンドの振り分け
-- S3 - Next.js静的ファイルのホスティング
-- ALB (Application Load Balancer) - Rails APIへのリクエストをECS Fargateタスクへ分散
+- S3 - Next.js静的ファイルの配置
+- ALB - Rails APIへのリクエストをECS Fargateタスクへ分散
 - ECS Fargate - Rails API のコンテナ実行
 - Amazon RDS for MySQL - データベース
 - ECR - Dockerイメージ管理
@@ -124,15 +126,15 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 1. ユーザーは独自ドメイン（`tsunagu-app.com`）にHTTPSでアクセスします。
 2. リクエストはCloudFrontに届き、パスパターンによって振り分けられます。
-3. `/api/*` にマッチするリクエストは、ALB経由でECS Fargate上のRails APIコンテナへ転送されます。
-4. それ以外のリクエストは、S3にホスティングされているNext.jsの静的ファイルがそのまま返されます。
+3. `/api/*` にマッチするリクエストは、ALBを経由してRails API（ECS Fargate）に転送されます。
+4. それ以外のリクエストは、S3に配置されているNext.jsの静的ファイルがそのまま返されます。
 
 #### 外部連携
 
-- RDS: ユーザー、児童、クラス、面談枠、割り当て結果などの永続化・取得に利用します。
+- RDS: ユーザー、児童、クラス、面談枠、割り当て結果などの保存・取得に利用します。
 - Gmail API: リマインドメール送信に利用します。
 - Google Calendar API: 保護者の面談日程をGoogleカレンダーへ登録する際に利用します。
-- OAuth 2.0（Google）: 教員アカウントとGoogleアカウントの連携に利用します。
+- OAuth 2.0（Google）: 教員・保護者アカウントとGoogleアカウントの連携に利用します。
 
 #### デプロイの流れ
 
@@ -149,18 +151,18 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 ![Tsunagu ER図](docs/images/readme/er-diagram.png)
 
-| テーブル                  | 役割                                                                                                |
-| ------------------------- | --------------------------------------------------------------------------------------------------- |
-| `users`                   | 認証情報。Googleカレンダー連携用のトークンも保持                                                    |
-| `teachers`                | 教員のプロフィール情報                                                                              |
-| `families`                | 保護者のプロフィール情報                                                                            |
-| `children`                | 児童情報                                                                                            |
-| `class_rooms`             | クラス情報。担任の教員に紐づく                                                                      |
-| `child_class_rooms`       | 児童の所属クラス。1人の児童が複数クラスに所属できる（通常学級と支援学級を掛け持ちするケースに対応） |
-| `schedules`               | 面談を実施する期間の設定                                                                            |
-| `meeting_slots`           | 面談枠。日時ごとに区切られた1コマ                                                                   |
-| `assignments`             | 面談枠に割り当てられた児童の記録                                                                    |
-| `family_unavailabilities` | 保護者が提出した面談不可の日時                                                                      |
+| テーブル                  | 役割                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| `users`                   | 認証情報。Googleカレンダー連携用のトークンも保持                               |
+| `teachers`                | 教員のプロフィール情報                                                         |
+| `families`                | 保護者のプロフィール情報                                                       |
+| `children`                | 児童情報                                                                       |
+| `class_rooms`             | クラス情報。担任の教員に紐づく                                                 |
+| `child_class_rooms`       | 児童の所属クラス。複数クラスに所属できる（通常学級と特別支援学級の在籍に対応） |
+| `schedules`               | 面談を実施する期間の設定                                                       |
+| `meeting_slots`           | 面談枠。日時ごとに区切られた1コマ                                              |
+| `assignments`             | 面談枠に割り当てられた児童の記録                                               |
+| `family_unavailabilities` | 保護者が提出した面談不可の日時                                                 |
 
 ## 使用技術 (フロントエンド)
 
@@ -178,7 +180,7 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 | 技術                                                                             | バージョン / 補足               |
 | -------------------------------------------------------------------------------- | ------------------------------- |
-| [Ruby](https://www.ruby-lang.org/)                                               | 3.2.x                           |
+| [Ruby](https://www.ruby-lang.org/)                                               | 3.3.x                           |
 | [Rails](https://rubyonrails.org/)                                                | 8.1.x / API mode                |
 | [MySQL](https://www.mysql.com/) / [mysql2](https://github.com/brianmario/mysql2) | 8.0（本番：Amazon RDS）         |
 | [jwt](https://github.com/jwt/ruby-jwt)                                           | 認証（自前実装、有効期限30分）  |
@@ -196,7 +198,7 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 | 技術                                                                                                                     | 用途                                                  |
 | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)                                          | Next.js 静的ファイルのホスティング                    |
+| [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)                                          | Next.js 静的ファイルの配置                            |
 | [AWS ECS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)                          | Rails API のコンテナ実行                              |
 | [ALB (Application Load Balancer)](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) | Rails API へのリクエストをECS Fargateタスクへ分散     |
 | [Amazon CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html)                | CDN配信・パスベースルーティングによるS3/ALBの振り分け |
@@ -233,14 +235,6 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 兄弟姉妹の連続配置・特別支援学級との調整など、制約条件を踏まえて面談枠を自動で割り当てます。
 
-### 面談期間・時間枠の設定
-
-<!-- スクリーンショットを挿入 -->
-
-![面談期間設定](docs/images/readme/schedule-setting.png)
-
-教員が面談を実施する日程と、1日あたりの時間帯を設定します。ここで作られた1コマ1コマが面談枠となります。
-
 ### 保護者の面談不可日提出
 
 <!-- スクリーンショットを挿入 -->
@@ -267,19 +261,25 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 
 ### 管理画面
 
-<!-- 2枚並べて挿入 -->
+<!-- ユーザー管理: 2枚並べて挿入 -->
 
-| ![ユーザー管理](docs/images/readme/admin-users.png) | ![割当状況の可視化](docs/images/readme/admin-chart.png) |
-| --------------------------------------------------- | ------------------------------------------------------- |
-| 教員・保護者アカウントの検索・一括削除              | クラスごとの割り当て状況をグラフで確認                  |
+| ![教師一覧](docs/images/readme/teacher-list.png) | ![保護者一覧](docs/images/readme/parent-list.png)      |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| 教員アカウントの検索・一括削除                   | 保護者アカウントの検索・一括削除（クラス絞り込み対応） |
+
+<!-- 割り当て状況の可視化 -->
+
+![割当状況の可視化](docs/images/readme/admin-chart.png)
+
+クラスごとの割り当て状況をグラフで確認できます。
 
 ### パスワードリセット
 
-<!-- 2枚並べて挿入 -->
+<!-- 3枚並べて挿入 -->
 
-| ![リセット申請画面](docs/images/readme/password-reset-request.png) | ![リセット用メール](docs/images/readme/password-reset-email.png) |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| リセット申請                                                       | 届いたメールから再設定画面へ遷移                                 |
+| ![リセット申請画面](docs/images/readme/password-reset-request.png) | ![リセット用メール](docs/images/readme/password-reset-email.png) | ![新パスワード設定画面](docs/images/readme/password-reset-new.png) |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------ |
+| メールアドレスを入力してリセットを申請                             | 届いたメールのリンクから遷移                                     | 新しいパスワードを設定して完了                                     |
 
 ## 工夫した点
 
@@ -305,10 +305,6 @@ docker compose exec rails bin/rails db:create db:migrate db:seed
 | 面談不可日時を提出済み |   +1   | 連続枠は不要だが、保護者側の都合で候補となる枠が減る                  |
 
 合計スコアの降順で処理し、条件を満たす枠が見つからなかった家庭は割り当てをスキップして、教員が手動で最終調整します。
-
-### 3. 多対多関係によるクラス設計
-
-児童が複数のクラス（特別支援学級との併籍など）に所属しうるという学校現場特有の事情を踏まえ、`Child`と`ClassRoom`は中間テーブル`child_class_rooms`を介した多対多の関係で設計しました。`children`テーブル自体にクラス関連のカラムを持たせることなく、`child.class_rooms`という関連付けメソッド経由で柔軟にクラス情報を取得・更新できる構成にしています。
 
 ## テスト・静的解析
 
