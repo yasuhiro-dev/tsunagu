@@ -221,7 +221,7 @@ erDiagram
 		datetime google_token_expires_at
 	}
 	Child ||--}o Assignment : "児童が割り当て記録を持つ"
-	MeetingSlot ||--}o Assignment : "面談枠が割り当て記録を持つ"
+	MeetingSlot ||--}o Assignment : "割り当てを持つ"
 	Family ||--}o Child : "保護者が児童を登録する"
 	Schedule o|--}o Child : "この期間の児童が対象になる"
 	Child ||--}o ChildClassRoom : "児童が所属クラスを持つ"
