@@ -118,8 +118,6 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### インフラ構成図
 
-<!-- 構成図の画像を docs/images/readme/infrastructure.png のように配置してリンクしてください -->
-
 ![Tsunagu インフラ構成図](docs/images/readme/infrastructure.png)
 
 #### リクエストの流れ
@@ -147,93 +145,7 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ## ER図
 
-```mermaid
-erDiagram
-	direction TB
-		Assignment {
-		integer id PK
-		integer child_id FK
-		integer meeting_slot_id FK
-	}
-	Child {
-		integer id PK
-		integer family_id FK
-		integer schedule_id FK
-		string name
-		string name_kana
-	}
-	ChildClassRoom {
-		integer id PK
-		integer child_id FK
-		integer class_room_id FK
-	}
-	ClassRoom {
-		integer id PK
-		integer teacher_id FK
-		integer grade
-		integer section
-		string classname
-		integer room_type
-	}
-	Family {
-		integer id PK
-		integer user_id FK
-		string name
-		string name_kana
-		boolean submitted
-	}
-	FamilyUnavailability {
-		integer id PK
-		integer family_id FK
-		integer meeting_slot_id FK
-	}
-	MeetingSlot {
-		integer id PK
-		integer teacher_id FK
-		integer schedule_id FK
-		datetime start_at
-		datetime end_at
-		integer status
-	}
-	Schedule {
-		integer id PK
-		string name
-		integer year
-		datetime deadline_at
-	}
-	Teacher {
-		integer id PK
-		integer user_id FK
-		string name
-		string name_kana
-		integer role
-	}
-	User {
-		integer id PK
-		string email_address
-		string password_digest
-		string name
-		string role
-		string reset_digest
-		datetime reset_sent_at
-		text google_access_token
-		text google_refresh_token
-		datetime google_token_expires_at
-	}
-	Child ||--}o Assignment : "児童が割り当て記録を持つ"
-	MeetingSlot ||--}o Assignment : ""
-	Family ||--}o Child : "保護者が児童を登録する"
-	Schedule o|--}o Child : "この期間の児童が対象になる"
-	Child ||--}o ChildClassRoom : "児童が所属クラスを持つ"
-	ClassRoom ||--}o ChildClassRoom : "クラスが所属児童を持つ"
-	Teacher ||--}o ClassRoom :  "担任する"
-	Family ||--}o FamilyUnavailability : "保護者が不可日時を提出する"
-	User ||--|o Family : "保護者アカウントに紐づく"
-	MeetingSlot ||--}o FamilyUnavailability : "面談枠が不可日時の対象になる"
-	Teacher ||--}o MeetingSlot : "教員が面談枠を持つ"
-	Schedule ||--}o MeetingSlot : ""
-	User o|--|o Teacher : "教員アカウントに紐づく"
-```
+![Tsunagu ER図](docs/images/readme/er.png)
 
 | テーブル                  | 役割                                                                           |
 | ------------------------- | ------------------------------------------------------------------------------ |
