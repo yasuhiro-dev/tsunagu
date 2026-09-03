@@ -306,15 +306,15 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ```
 # Rails
-docker compose exec rails env RAILS_ENV=test bundle exec rspec
-docker compose exec rails bundle exec rubocop
-docker compose exec rails bundle exec brakeman
+docker compose exec rails_container env RAILS_ENV=test bundle exec rspec
+docker compose exec rails_container bundle exec rubocop
+docker compose exec rails_container bundle exec brakeman
 
 # Next.js
-docker compose exec next npm run lint
+docker compose exec next_container npm run lint
 ```
 
-CIでは RSpec（22ファイル / リクエストスペック14・割り当てロジック8）、RuboCop、Brakeman、ESLint を実行しています。
+CIでは RSpec（22ファイル / リクエストスペック13・サービススペック8・メーラースペック1）、RuboCop、Brakeman、ESLint を実行しています。
 割り当てロジックは8クラスすべてに個別のスペックを用意し、条件ごとの挙動を独立して検証しています。
 
 ## 各種リンク

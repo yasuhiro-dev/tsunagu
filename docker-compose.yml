@@ -33,8 +33,8 @@ services:
       # ローカル時のURLの遷移先を指定
       FRONTEND_URL: http://localhost:3001
       BACKEND_URL: http://localhost:3000
-      # Pumaにsolid_queueのワーカーを同居起動させる（puma.rbのplugin指定が反応する）
-      SOLID_QUEUE_IN_PUMA: "true"
+      # # Pumaにsolid_queueのワーカーを同居起動させる（puma.rbのplugin指定が反応する）
+      # SOLID_QUEUE_IN_PUMA: "true"
     depends_on:
       mysql_container:
         condition: service_healthy
