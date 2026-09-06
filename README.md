@@ -213,62 +213,66 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### トップページ
 
-![トップページ](docs/images/readme/top-page.png)
+<img src="docs/images/readme/top-page.png" width="800" alt="トップページ">
 
 トップページでは、アプリの概要と主要導線が分かるようにしています。
 
 ### ログイン
 
-<img src="docs/images/readme/login-page.png" width="500" alt="ログイン画面">
+<img src="docs/images/readme/login-page.png" width="450" alt="ログイン画面">
 
 ログイン
 
 ### 新規登録
 
-<img src="docs/images/readme/signup-page.png" width="500" alt="新規登録画面">
+<img src="docs/images/readme/signup-page.png" width="450" alt="新規登録画面">
 
 新規登録（児童の複数登録に対応）
 
 ### 面談枠の自動割り当て
 
-![割り当てデモ](docs/images/readme/assignment-demo.gif)
+<img src="docs/images/readme/assignment-demo.gif" width="800" alt="割り当てデモ">
 
 兄弟姉妹の連続配置・特別支援学級との調整など、制約条件を踏まえて面談枠を自動で割り当てます。
 
 ### 保護者の面談不可日提出
 
-![面談不可日提出](docs/images/readme/unavailability.png)
+<img src="docs/images/readme/unavailability.png" width="800" alt="面談不可日提出">
 
 提示された面談枠のうち、都合の悪い枠をWeb上で選択して提出します。
 
 ### 確定した面談日程の確認
 
-![面談日程確認](docs/images/readme/confirmed-schedule.png)
+<img src="docs/images/readme/confirmed-schedule.png" width="450" alt="面談日程確認">
 
 保護者が自分の子どもの面談日時を確認し、ワンクリックでGoogleカレンダーに登録できます。
 
 ### 面談表PDF出力
 
-![PDF出力](docs/images/readme/pdf-export.png)
+<img src="docs/images/readme/pdf-export.png" width="800" alt="PDF出力">
 
 割り当て結果を、先生が確認・共有しやすいPDF形式で出力できます。
 
 ### 管理画面
 
-| ![教師一覧](docs/images/readme/teacher-list.png) | ![保護者一覧](docs/images/readme/parent-list.png)      |
-| ------------------------------------------------ | ------------------------------------------------------ |
-| 教員アカウントの検索・一括削除                   | 保護者アカウントの検索・一括削除（クラス絞り込み対応） |
+<img src="docs/images/readme/teacher-list.png" width="800" alt="教師一覧">
 
-![割当状況の可視化](docs/images/readme/admin-chart.png)
+教員アカウントの検索・一括削除
+
+<img src="docs/images/readme/parent-list.png" width="800" alt="保護者一覧">
+
+保護者アカウントの検索・一括削除（クラス絞り込み対応）
+
+<img src="docs/images/readme/admin-chart.png" width="800" alt="割当状況の可視化">
 
 クラスごとの割り当て状況をグラフで確認できます。
 
 ### パスワードリセット
 
-![リセット用メール](docs/images/readme/password-reset-email.png)
+<img src="docs/images/readme/password-reset-email.png" width="800" alt="リセット用メール">
 
 メールアドレスを入力してリセットを申請すると、再設定用のリンクをメールで送信します。
-リンクから遷移して新しいパスワードを設定すると完了です。 |
+リンクから遷移して新しいパスワードを設定すると完了です。
 
 ## 工夫した点
 
