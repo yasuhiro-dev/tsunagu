@@ -219,13 +219,13 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### ログイン
 
-![ログイン画面](docs/images/readme/login-page.png)
+<img src="docs/images/readme/login-page.png" width="500" alt="ログイン画面">
 
 ログイン
 
 ### 新規登録
 
-![新規登録画面](docs/images/readme/signup-page.png)
+<img src="docs/images/readme/signup-page.png" width="500" alt="新規登録画面">
 
 新規登録（児童の複数登録に対応）
 
