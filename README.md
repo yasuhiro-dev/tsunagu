@@ -93,7 +93,7 @@ docker compose exec next_container npm run dev
 
 バックエンドは Rails API mode で構築しています。認証、面談枠の自動割り当てロジック、PDF出力、Google連携（Gmail / カレンダー）などのAPIを提供します。
 
-```
+```bash
 docker compose up -d
 docker compose exec rails_container bundle install
 docker compose exec rails_container bin/rails db:create db:migrate db:seed
@@ -125,6 +125,8 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 ### インフラ構成図
 
 ![Tsunagu インフラ構成図](docs/images/readme/infrastructure.png)
+
+_図をクリックすると拡大表示できます_
 
 #### リクエストの流れ
 
@@ -168,15 +170,15 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ## 使用技術 (フロントエンド)
 
-| 技術                                            | バージョン / 補足            |
-| ----------------------------------------------- | ---------------------------- |
-| [Next.js](https://nextjs.org/docs)              | 16.x                         |
-| [React](https://react.dev/)                     | 19.x                         |
-| [TypeScript](https://www.typescriptlang.org/)   | 5.x                          |
-| [MUI](https://mui.com/)                         | v9                           |
-| [MUI X Charts](https://mui.com/x/react-charts/) | 割当状況の可視化に使用       |
-| fetch API                                       | APIリクエスト（Next.js標準） |
-| [ESLint](https://eslint.org/)                   | 静的解析                     |
+| 技術                                            | バージョン / 補足                                                    |
+| ----------------------------------------------- | -------------------------------------------------------------------- | ---------------------------- |
+| [Next.js](https://nextjs.org/docs)              | 16.x                                                                 |
+| [React](https://react.dev/)                     | 19.x                                                                 |
+| [TypeScript](https://www.typescriptlang.org/)   | 5.x                                                                  |
+| [MUI](https://mui.com/)                         | v9                                                                   |
+| [MUI X Charts](https://mui.com/x/react-charts/) | 割当状況の可視化に使用                                               |
+|                                                 | [fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API) | APIリクエスト（Next.js標準） |
+| [ESLint](https://eslint.org/)                   | 静的解析                                                             |
 
 ## 使用技術 (バックエンド)
 
