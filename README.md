@@ -78,7 +78,7 @@ Tsunagu は「学校特有の制約条件を尊重しながら、できる限り
 
 フロントエンドは Next.js（TypeScript）で構築しています。面談枠の表示・割り当て結果の確認・保護者の面談不可日入力などの画面を担当します。
 
-```
+```bash
 docker compose up -d
 docker compose exec next_container npm install
 docker compose exec next_container npm run dev
@@ -109,6 +109,8 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 - Next.js は静的サイトとしてビルドし、**S3** に置いて配信
 - Rails API は Docker イメージ化し、**ECS Fargate** 上のコンテナとして実行
 - **CloudFront** がパスベースルーティングで振り分け（`/api/*` → Rails API、それ以外 → Next.js）
+
+#### 構成するAWSサービス
 
 - Route 53 - DNS
 - ACM - HTTPS証明書
@@ -221,13 +223,11 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 <img src="docs/images/readme/login-page.png" width="450" alt="ログイン画面">
 
-ログイン
-
 ### 新規登録
 
 <img src="docs/images/readme/signup-page.png" width="450" alt="新規登録画面">
 
-新規登録（児童の複数登録に対応）
+児童の複数登録に対応しています。
 
 ### 面談枠の自動割り当て
 
@@ -309,7 +309,7 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ## テスト・静的解析
 
-```
+```bash
 # Rails
 docker compose exec rails_container env RAILS_ENV=test bundle exec rspec
 docker compose exec rails_container bundle exec rubocop
