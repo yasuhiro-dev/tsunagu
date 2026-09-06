@@ -219,9 +219,9 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### 認証
 
-| ![ログイン画面](docs/images/readme/login-page.png) | ![新規登録画面](docs/images/readme/signup-page.png) |
-| -------------------------------------------------- | --------------------------------------------------- |
-| ログイン                                           | 新規登録（児童の複数登録に対応）                    |
+| <img src="docs/images/readme/login-page.png" width="400"> | <img src="docs/images/readme/signup-page.png" width="400"> |
+| --------------------------------------------------------- | ---------------------------------------------------------- |
+| ログイン                                                  | 新規登録（児童の複数登録に対応）                           |
 
 ### 面談枠の自動割り当て
 
