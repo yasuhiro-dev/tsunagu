@@ -50,21 +50,22 @@ Tsunagu は「学校特有の制約条件を尊重しながら、できる限り
 - パスワードリセット（メールで再設定リンクを送信）
 - ロール（保護者 / 教員 / 管理者）に応じて表示する画面・利用できるAPIを制限
 
+### 教員
+
+- 児童一覧・未提出者の確認
+- 未割当児童の一覧確認
+- 個別の手動割り当て（未割当の家庭を教員が直接指定）
+- 面談確定メールの自動送信（Gmail API / 新規割り当て時に保護者へ自動通知）
+- 面談不可日時の登録（教員自身の対応できない日時をあらかじめ設定）
+- 面談表のPDF出力
+- Googleアカウント連携（OAuth 2.0）
+
 ### 保護者
 
 - 児童の複数登録（兄弟・特別支援学級への在籍に対応）
 - 面談不可日時の提出
 - 確定した面談日時の確認
 - 面談日時のGoogleカレンダー登録（Googleアカウント連携後、ワンクリックで追加）
-
-### 教員
-
-- **面談枠の自動割り当て**
-- 未割当児童の一覧確認
-- 個別の手動割り当て（未割当の家庭を教員が直接指定）
-- 面談確定メールの自動送信（Gmail API / 新規割り当て時に保護者へ自動通知）
-- 面談スケジュールのPDF出力
-- Googleアカウント連携（OAuth 2.0）
 
 ### 管理者
 
@@ -212,15 +213,11 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### トップページ
 
-<!-- スクリーンショットを挿入 -->
-
 ![トップページ](docs/images/readme/top-page.png)
 
 トップページでは、アプリの概要と主要導線が分かるようにしています。
 
 ### 認証
-
-<!-- 2枚並べて挿入 -->
 
 | ![ログイン画面](docs/images/readme/login-page.png) | ![新規登録画面](docs/images/readme/signup-page.png) |
 | -------------------------------------------------- | --------------------------------------------------- |
@@ -228,15 +225,11 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### 面談枠の自動割り当て
 
-<!-- デモGIF・スクリーンショットを挿入 -->
-
 ![割り当てデモ](docs/images/readme/assignment-demo.gif)
 
 兄弟姉妹の連続配置・特別支援学級との調整など、制約条件を踏まえて面談枠を自動で割り当てます。
 
 ### 保護者の面談不可日提出
-
-<!-- スクリーンショットを挿入 -->
 
 ![面談不可日提出](docs/images/readme/unavailability.png)
 
@@ -244,15 +237,11 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### 確定した面談日程の確認
 
-<!-- スクリーンショットを挿入 -->
-
 ![面談日程確認](docs/images/readme/confirmed-schedule.png)
 
 保護者が自分の子どもの面談日時を確認し、ワンクリックでGoogleカレンダーに登録できます。
 
 ### 面談表PDF出力
-
-<!-- スクリーンショットを挿入 -->
 
 ![PDF出力](docs/images/readme/pdf-export.png)
 
@@ -260,13 +249,9 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 ### 管理画面
 
-<!-- ユーザー管理: 2枚並べて挿入 -->
-
 | ![教師一覧](docs/images/readme/teacher-list.png) | ![保護者一覧](docs/images/readme/parent-list.png)      |
 | ------------------------------------------------ | ------------------------------------------------------ |
 | 教員アカウントの検索・一括削除                   | 保護者アカウントの検索・一括削除（クラス絞り込み対応） |
-
-<!-- 割り当て状況の可視化 -->
 
 ![割当状況の可視化](docs/images/readme/admin-chart.png)
 
