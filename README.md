@@ -170,15 +170,15 @@ _図をクリックすると拡大表示できます_
 
 ## 使用技術 (フロントエンド)
 
-| 技術                                            | バージョン / 補足                                                    |
-| ----------------------------------------------- | -------------------------------------------------------------------- | ---------------------------- |
-| [Next.js](https://nextjs.org/docs)              | 16.x                                                                 |
-| [React](https://react.dev/)                     | 19.x                                                                 |
-| [TypeScript](https://www.typescriptlang.org/)   | 5.x                                                                  |
-| [MUI](https://mui.com/)                         | v9                                                                   |
-| [MUI X Charts](https://mui.com/x/react-charts/) | 割当状況の可視化に使用                                               |
-|                                                 | [fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API) | APIリクエスト（Next.js標準） |
-| [ESLint](https://eslint.org/)                   | 静的解析                                                             |
+| 技術                                                                 | バージョン / 補足            |
+| -------------------------------------------------------------------- | ---------------------------- |
+| [Next.js](https://nextjs.org/docs)                                   | 16.x                         |
+| [React](https://react.dev/)                                          | 19.x                         |
+| [TypeScript](https://www.typescriptlang.org/)                        | 5.x                          |
+| [MUI](https://mui.com/)                                              | v9                           |
+| [MUI X Charts](https://mui.com/x/react-charts/)                      | 割当状況の可視化に使用       |
+| [fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API) | APIリクエスト（Next.js標準） |
+| [ESLint](https://eslint.org/)                                        | 静的解析                     |
 
 ## 使用技術 (バックエンド)
 
