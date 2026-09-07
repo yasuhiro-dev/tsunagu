@@ -6,7 +6,7 @@ Tsunagu は **できる限り多くの家庭を自動で割り当てる** こと
 「兄弟は連続した枠に」「特別支援学級は通常学級と連続した枠に」といった
 学校現場特有の制約を同時に満たすスケジューリングアルゴリズムを実装しています。現役小学校教員としての実務経験をもとに設計しました。
 
-登録不要、ワンクリックで教師・保護者（確定した日程の参照/都合の悪い日の設定）・管理者の4ロールを試せます。
+登録不要、ワンクリックで教師・保護者（提出済み/提出前）・管理者の4ロールを試せます。
 
 アプリケーションや実装内容は以下から確認できます。
 
@@ -14,13 +14,12 @@ Tsunagu は **できる限り多くの家庭を自動で割り当てる** こと
 - GitHub (フロントエンド): <https://github.com/yasuhiro-dev/tsunagu-frontend>
 - GitHub (バックエンド): <https://github.com/yasuhiro-dev/tsunagu-backend>
 
-**技術構成**: Next.js (TypeScript) / Rails 8 API mode / MySQL / AWS (ECS Fargate・S3・CloudFront・RDS) / Docker / GitHub Actions
-
 ## 目次
 
 - [解決する課題](#解決する課題)
 - [機能](#機能)
-- [開発環境（ローカル）](#開発環境ローカル)
+- [開発環境 (フロントエンド)](#開発環境-フロントエンド)
+- [開発環境 (バックエンド)](#開発環境-バックエンド)
 - [本番環境](#本番環境)
   - [インフラ構成図](#インフラ構成図)
 - [ER図](#er図)
@@ -45,12 +44,6 @@ Tsunagu は **できる限り多くの家庭を自動で割り当てる** こと
 | **早い者勝ちで不公平に**<br>予約が早い家庭だけが有利になる                              | **条件が多い家庭を優先**<br>兄弟・特別支援など、選べる枠が少ない家庭から先に確保する |
 
 Tsunagu は「学校特有の制約条件を尊重しながら、できる限り多くの家庭を自動で割り当てる」ことを軸に、機能・データ設計を行っています。条件が重なって配置できなかった家庭は、エラーにせず一覧で教員に返し、手動で調整できるようにしています。
-
-### 自動割り当ての動作
-
-<img src="docs/images/readme/assignment-demo.gif" width="800" alt="割り当てデモ">
-
-兄弟姉妹の連続配置・特別支援学級との調整など、制約条件を踏まえて面談枠を自動で割り当てます。
 
 ## 機能
 
@@ -84,24 +77,9 @@ Tsunagu は「学校特有の制約条件を尊重しながら、できる限り
 - 提出締切日の設定
 - クラス別の割り当て状況の可視化（グラフ）
 
-## 開発環境（ローカル）
+## 開発環境 (フロントエンド)
 
-このリポジトリはドキュメント専用です。ローカルで動かすには、[フロントエンド](https://github.com/yasuhiro-dev/tsunagu-frontend)・[バックエンド](https://github.com/yasuhiro-dev/tsunagu-backend)の2リポジトリを、それぞれ `meeting_front` / `interview_app` というフォルダ名でこのリポジトリ直下にクローンしてください。
-
-<details>
-<summary>起動手順を見る</summary>
-
-```bash
-git clone https://github.com/yasuhiro-dev/tsunagu.git
-git clone https://github.com/yasuhiro-dev/tsunagu-frontend.git tsunagu/meeting_front
-git clone https://github.com/yasuhiro-dev/tsunagu-backend.git tsunagu/interview_app
-```
-
-バックエンドの起動には `RAILS_MASTER_KEY` が必要です。`config/master.key` がない場合、Google連携・メール送信機能は動作しません。
-
-### フロントエンド
-
-面談枠の表示・割り当て結果の確認・保護者の面談不可日入力などの画面を担当します。
+フロントエンドは Next.js（TypeScript）で構築しています。面談枠の表示・割り当て結果の確認・保護者の面談不可日入力などの画面を担当します。
 
 ```bash
 docker compose up -d
@@ -110,10 +88,13 @@ docker compose exec next_container npm run dev
 ```
 
 - URL: <http://localhost:3001>
+- 開発言語: TypeScript
+- フレームワーク: Next.js / React
+- UIライブラリ: MUI
 
-### バックエンド
+## 開発環境 (バックエンド)
 
-認証、面談枠の自動割り当てロジック、PDF出力、Google連携（Gmail / カレンダー）などのAPIを提供します。
+バックエンドは Rails API mode で構築しています。認証、面談枠の自動割り当てロジック、PDF出力、Google連携（Gmail / カレンダー）などのAPIを提供します。
 
 ```bash
 docker compose up -d
@@ -122,19 +103,18 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 ```
 
 - Rails API: <http://localhost:3000>
-
-</details>
+- DB: MySQL
 
 ## 本番環境
 
-本番環境では、フロントエンド（Next.js）とバックエンド（Rails API）を別々の形で運用し、CloudFrontが1つのドメイン（`tsunagu-app.com`）への入り口となり、両者を繋いでいます。
+本番環境では、フロントエンド（Next.js）とバックエンド（Rails API）を別々の形で運用しています。
 
 - Next.js は静的サイトとしてビルドし、**S3** に置いて配信
 - Rails API は Docker イメージ化し、**ECS Fargate** 上のコンテナとして実行
-- **CloudFront** がパスベースルーティングで振り分け（`/api/*` → Rails API、それ以外 → Next.js）
 
-### 構成するAWSサービス
+#### 構成するAWSサービス
 
+- RDS: ユーザー、児童、クラス、面談枠、割り当て結果などの保存・取得に利用します。
 - Route 53 - DNS
 - ACM - HTTPS証明書
 - CloudFront - CDN配信・パスベースルーティングによるフロント/バックエンドの振り分け
@@ -151,22 +131,27 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 _図をクリックすると拡大表示できます_
 
-CloudFront がリクエストのパスを見て、`/api/*` は ALB 経由で Rails API（ECS Fargate）へ、それ以外は S3 上の Next.js 静的ファイルへ振り分けます。
+#### リクエストの流れ
 
-### 外部連携
+1. ユーザーは独自ドメイン（`tsunagu-app.com`）にHTTPSでアクセスします。
+2. リクエストはCloudFrontに届き、パスパターンによって振り分けられます。
+3. `/api/*` にマッチするリクエストは、ALBを経由してRails API（ECS Fargate）に転送されます。
+4. それ以外のリクエストは、S3に配置されているNext.jsの静的ファイルがそのまま返されます。
+
+#### 外部連携
 
 - Gmail API: リマインドメール送信に利用します。
 - Google Calendar API: 保護者の面談日程をGoogleカレンダーへ登録する際に利用します。
 - OAuth 2.0（Google）: 教員・保護者アカウントとGoogleアカウントの連携に利用します。
 
-### デプロイの流れ
+#### デプロイの流れ
 
 `main` ブランチへの push を GitHub Actions が検知し、以下を実行します。
 
 - フロントエンド: Next.jsを静的ビルドし、S3へアップロード
 - バックエンド: Dockerイメージを ECR へ push したうえで、ECS Fargate サービスへデプロイ
 
-いずれの場合もCloudFrontのキャッシュを適宜無効化（インバリデーション）し、最新の内容が反映されるようにしています。
+いずれの場合もCloudFrontのキャッシュを適宜無効化し、最新の内容が反映されるようにしています。
 
 ## ER図
 
@@ -194,7 +179,7 @@ CloudFront がリクエストのパスを見て、`/api/*` は ALB 経由で Rai
 | [TypeScript](https://www.typescriptlang.org/)                        | 5.x                          |
 | [MUI](https://mui.com/)                                              | v9                           |
 | [MUI X Charts](https://mui.com/x/react-charts/)                      | 割当状況の可視化に使用       |
-| fetch API                                                            | APIリクエスト（Next.js標準） |
+| [fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API) | APIリクエスト（Next.js標準） |
 | [ESLint](https://eslint.org/)                                        | 静的解析                     |
 
 ## 使用技術 (バックエンド)
@@ -218,18 +203,18 @@ CloudFront がリクエストのパスを見て、`/api/*` は ALB 経由で Rai
 
 ## 使用技術 (インフラ・その他)
 
-| 技術                            | 用途                                                  |
-| ------------------------------- | ----------------------------------------------------- |
-| Amazon S3                       | Next.js 静的ファイルの配置                            |
-| AWS ECS Fargate                 | Rails API のコンテナ実行                              |
-| ALB (Application Load Balancer) | Rails API へのリクエストをECS Fargateタスクへ分散     |
-| Amazon CloudFront               | CDN配信・パスベースルーティングによるS3/ALBの振り分け |
-| Amazon RDS for MySQL            | 本番DB                                                |
-| Route 53                        | DNS                                                   |
-| ACM                             | HTTPS証明書                                           |
-| ECR                             | Dockerイメージ管理                                    |
-| GitHub Actions                  | CI/CD                                                 |
-| Docker / Docker Compose         | 開発環境                                              |
+| 技術                                                                                                                     | 用途                                                  |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)                                          | Next.js 静的ファイルの配置                            |
+| [AWS ECS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)                          | Rails API のコンテナ実行                              |
+| [ALB (Application Load Balancer)](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) | Rails API へのリクエストをECS Fargateタスクへ分散     |
+| [Amazon CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html)                | CDN配信・パスベースルーティングによるS3/ALBの振り分け |
+| [Amazon RDS for MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html)                           | 本番DB                                                |
+| [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html)                                       | DNS                                                   |
+| [ACM](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html)                                                | HTTPS証明書                                           |
+| [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html)                                           | Dockerイメージ管理                                    |
+| [GitHub Actions](https://docs.github.com/en/actions)                                                                     | CI/CD                                                 |
+| [Docker / Docker Compose](https://docs.docker.com/)                                                                      | 開発環境                                              |
 
 ## 画面
 
@@ -240,6 +225,8 @@ CloudFront がリクエストのパスを見て、`/api/*` は ALB 経由で Rai
 
 <img src="docs/images/readme/top-page.png" width="800" alt="トップページ">
 
+トップページでは、アプリの概要と主要導線が分かるようにしています。
+
 ### ログイン
 
 <img src="docs/images/readme/login-page.png" width="450" alt="ログイン画面">
@@ -249,6 +236,12 @@ CloudFront がリクエストのパスを見て、`/api/*` は ALB 経由で Rai
 <img src="docs/images/readme/signup-page.png" width="450" alt="新規登録画面">
 
 児童の複数登録に対応しています。
+
+### 面談枠の自動割り当て
+
+<img src="docs/images/readme/assignment-demo.gif" width="800" alt="割り当てデモ">
+
+兄弟姉妹の連続配置・特別支援学級との調整など、制約条件を踏まえて面談枠を自動で割り当てます。
 
 ### 保護者の面談不可日提出
 
@@ -286,11 +279,12 @@ CloudFront がリクエストのパスを見て、`/api/*` は ALB 経由で Rai
 
 <img src="docs/images/readme/password-reset-email.png" width="800" alt="リセット用メール">
 
+メールアドレスを入力してリセットを申請すると、再設定用のリンクをメールで送信します。
+リンクから遷移して新しいパスワードを設定すると完了です。
+
 </details>
 
 ## 工夫した点
-
-割り当て処理は、非同期化とN+1解消により実行時間を **約82秒から約8秒（約1/10）** に短縮しています。詳細は[苦労した点・学んだこと](#苦労した点学んだこと)に記載しています。
 
 ### 1. 割り当てロジックの責務分割
 
@@ -327,15 +321,55 @@ CloudFront がリクエストのパスを見て、`/api/*` は ALB 経由で Rai
 
 ### 割り当てが失敗してしまう不具合
 
-面談自動割り当てボタンを押しても、一部の児童が割り当てられず、未割り当てになってしまう状態がありました。まずはタイポや実装ミスを疑い、フロントエンド・バックエンド双方のコードを確認しましたが、明確なエラーは見つかりませんでした。次に、どのパターンで失敗するのかを切り分けたところ、面談枠を2つ必要とする家庭は割り当てに成功する一方、3つ必要とする家庭のみ失敗していることが分かり、面談枠の割当ロジックを担当するサービスクラス（`SiblingsFilter`：兄弟の連続配置、`SupportFilter`：特別支援学級の連続配置）に当たりをつけました。ログを仕込んで中間データを確認したところ、`SiblingsFilter` が返す枠の並びと、`SupportFilter` が前提とする並び条件が噛み合っていないことが原因だと判明しました。`SiblingsFilter` 側で特別支援学級の枠が兄弟の通常学級枠と連続するよう条件を追加した結果、割り当ては安定し、問題を解消することができました。
+面談枠を3つ必要とする家庭のみ割り当てに失敗する不具合がありました。`SiblingsFilter`（兄弟の連続配置）と `SupportFilter`（特別支援学級の連続配置）の間で、枠の並び条件の前提が噛み合っていなかったことが原因でした。
 
-この経験から、単独ファイルの中だけで実装を考えるのではなく、フィルタをまたいだ処理の流れ全体で条件を統一し、一貫性を持たせておくことの必要性を学びました。
+<details>
+<summary>調査の流れを見る</summary>
+
+**症状**
+面談自動割り当てボタンを押しても、一部の児童が割り当てられず、未割り当てになってしまう状態がありました。
+
+**切り分け**
+まずはタイポや実装ミスを疑い、フロントエンド・バックエンド双方のコードを確認しましたが、明確なエラーは見つかりませんでした。次に、どのパターンで失敗するのかを切り分けたところ、面談枠を2つ必要とする家庭は割り当てに成功する一方、3つ必要とする家庭のみ失敗していることが分かりました。
+
+**仮説**
+面談枠の割当ロジックを担当するサービスクラス（`SiblingsFilter`：兄弟の連続配置、`SupportFilter`：特別支援学級の連続配置）に当たりをつけました。
+
+**原因**
+ログを仕込んで中間データを確認したところ、`SiblingsFilter` が返す枠の並びと、`SupportFilter` が前提とする並び条件が噛み合っていないことが原因だと判明しました。
+
+**再発防止**
+`SiblingsFilter` 側で特別支援学級の枠が兄弟の通常学級枠と連続するよう条件を追加した結果、割り当ては安定し、問題を解消することができました。
+
+</details>
+
+**学び**：単独ファイルの中だけで実装を考えるのではなく、フィルタをまたいだ処理の流れ全体で条件を統一し、一貫性を持たせておくことの必要性を学びました。
 
 ### 割当処理のレスポンス速度改善（solid_queue による非同期化と N+1 解消）
 
-面談自動割り当てを実行すると、完了までに約82秒かかる状態でした。CloudWatch のログを確認すると、1回のリクエストで4,453件もの SQL クエリが発行されており、該当箇所のコードで N+1 問題を調査していたところ、同じ処理の中で確認メール送信も呼ばれていることに気づきました。実際に仮のメールアドレスで受信を確認したところ、メールの受信に時間がかかっていることが分かり、外部API（Gmail API）への同期呼び出しが原因の一つではないかと考えました。原因を整理すると、①確認メール送信が割当処理と同じリクエスト内で同期的に実行されていたこと、②`includes` 済みの関連に `.where` や `.pluck` をチェーンしたことで事前読み込みが無効化され、N+1 が発生していたこと、の2点でした。まず確認メール送信を solid_queue で非同期化したところ約82秒から約10秒まで短縮され、その後 `.where` を `find { }` に、`.pluck` を `.map` に置き換え、事前読み込み済みのデータから取得する形にしたことで、約10秒から約8秒までさらに短縮されました。
+面談自動割り当てを実行すると完了までに約82秒かかる状態でしたが、確認メール送信の同期実行と N+1 問題という2つの原因を特定・解消し、約8秒まで短縮しました。
 
-この経験から、外部APIへの通信は結果をすぐ必要としない処理なら非同期化できること、そして `includes` は書いた時点で安心せず、後続で `.where` や `.pluck` をチェーンしていないか確認する必要があることを学びました。
+<details>
+<summary>調査の流れを見る</summary>
+
+**症状**
+面談自動割り当てを実行すると、完了までに約82秒かかる状態でした。
+
+**切り分け**
+CloudWatch のログを確認すると、1回のリクエストで4,453件もの SQL クエリが発行されており、該当箇所のコードで N+1 問題を調査していたところ、同じ処理の中で確認メール送信も呼ばれていることに気づきました。
+
+**仮説**
+実際に仮のメールアドレスで受信を確認したところ、メールの受信に時間がかかっていることが分かり、外部API（Gmail API）への同期呼び出しが原因の一つではないかと考えました。
+
+**原因**
+原因を整理すると、①確認メール送信が割当処理と同じリクエスト内で同期的に実行されていたこと、②`includes` 済みの関連に `.where` や `.pluck` をチェーンしたことで事前読み込みが無効化され、N+1 が発生していたこと、の2点でした。
+
+**再発防止**
+まず確認メール送信を solid_queue で非同期化したところ約82秒から約10秒まで短縮され、その後 `.where` を `find { }` に、`.pluck` を `.map` に置き換え、事前読み込み済みのデータから取得する形にしたことで、約10秒から約8秒までさらに短縮されました。
+
+</details>
+
+**学び**：外部APIへの通信は結果をすぐ必要としない処理なら非同期化できること、そして `includes` は書いた時点で安心せず、後続で `.where` や `.pluck` をチェーンしていないか確認する必要があることを学びました。
 
 ## テスト・静的解析
 
