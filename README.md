@@ -18,8 +18,7 @@ Tsunagu は **できる限り多くの家庭を自動で割り当てる** こと
 
 - [解決する課題](#解決する課題)
 - [機能](#機能)
-- [開発環境 (フロントエンド)](#開発環境-フロントエンド)
-- [開発環境 (バックエンド)](#開発環境-バックエンド)
+- [開発環境（ローカル）](#開発環境ローカル)
 - [本番環境](#本番環境)
   - [インフラ構成図](#インフラ構成図)
 - [ER図](#er図)
@@ -77,9 +76,24 @@ Tsunagu は「学校特有の制約条件を尊重しながら、できる限り
 - 提出締切日の設定
 - クラス別の割り当て状況の可視化（グラフ）
 
-## 開発環境 (フロントエンド)
+## 開発環境（ローカル）
 
-フロントエンドは Next.js（TypeScript）で構築しています。面談枠の表示・割り当て結果の確認・保護者の面談不可日入力などの画面を担当します。
+このリポジトリはドキュメント専用です。ローカルで動かすには、[フロントエンド](https://github.com/yasuhiro-dev/tsunagu-frontend)・[バックエンド](https://github.com/yasuhiro-dev/tsunagu-backend)の2リポジトリを、それぞれ `meeting_front` / `interview_app` というフォルダ名でこのリポジトリ直下にクローンしてください。
+
+<details>
+<summary>起動手順を見る</summary>
+
+```bash
+git clone https://github.com/yasuhiro-dev/tsunagu.git
+git clone https://github.com/yasuhiro-dev/tsunagu-frontend.git tsunagu/meeting_front
+git clone https://github.com/yasuhiro-dev/tsunagu-backend.git tsunagu/interview_app
+```
+
+バックエンドの起動には `RAILS_MASTER_KEY` が必要です。`config/master.key` がない場合、Google連携・メール送信機能は動作しません。
+
+### フロントエンド
+
+面談枠の表示・割り当て結果の確認・保護者の面談不可日入力などの画面を担当します。
 
 ```bash
 docker compose up -d
@@ -88,13 +102,10 @@ docker compose exec next_container npm run dev
 ```
 
 - URL: <http://localhost:3001>
-- 開発言語: TypeScript
-- フレームワーク: Next.js / React
-- UIライブラリ: MUI
 
-## 開発環境 (バックエンド)
+### バックエンド
 
-バックエンドは Rails API mode で構築しています。認証、面談枠の自動割り当てロジック、PDF出力、Google連携（Gmail / カレンダー）などのAPIを提供します。
+認証、面談枠の自動割り当てロジック、PDF出力、Google連携（Gmail / カレンダー）などのAPIを提供します。
 
 ```bash
 docker compose up -d
@@ -103,7 +114,8 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 ```
 
 - Rails API: <http://localhost:3000>
-- DB: MySQL
+
+</details>
 
 ## 本番環境
 
@@ -114,7 +126,6 @@ docker compose exec rails_container bin/rails db:create db:migrate db:seed
 
 #### 構成するAWSサービス
 
-- RDS: ユーザー、児童、クラス、面談枠、割り当て結果などの保存・取得に利用します。
 - Route 53 - DNS
 - ACM - HTTPS証明書
 - CloudFront - CDN配信・パスベースルーティングによるフロント/バックエンドの振り分け
