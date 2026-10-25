@@ -1,0 +1,148 @@
+// Tsunagu ER図（interview_app/db/schema.rb version 2026_09_26_012503 から作成）
+// solid_queue_* テーブル（ジョブ基盤）は省略
+
+Table users {
+  id bigint [pk]
+  email_address varchar
+  password_digest varchar
+  name varchar
+  role varchar
+  reset_digest varchar
+  reset_sent_at datetime
+  google_access_token text
+  google_refresh_token text
+  google_token_expires_at datetime
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '認証情報。Googleカレンダー連携用のトークンも保持'
+}
+
+Table teachers {
+  id bigint [pk]
+  user_id bigint
+  name varchar
+  name_kana varchar
+  role integer [note: 'enum: regular(0) / special(1)']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '教員のプロフィール情報'
+}
+
+Table families {
+  id bigint [pk]
+  user_id bigint
+  name varchar
+  name_kana varchar
+  submitted boolean [not null, default: false]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '保護者のプロフィール情報'
+}
+
+Table children {
+  id bigint [pk]
+  family_id bigint
+  schedule_id bigint
+  name varchar
+  name_kana varchar
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '児童情報'
+}
+
+Table class_rooms {
+  id bigint [pk]
+  teacher_id bigint
+  grade integer
+  section integer
+  classname varchar
+  room_type integer [note: 'enum: normal(0) / support(1)']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: 'クラス情報。担任の教員に紐づく'
+}
+
+Table child_class_rooms {
+  id bigint [pk]
+  child_id bigint
+  class_room_id bigint
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '児童の所属クラス（通常学級と特別支援学級の両方に在籍できる）'
+}
+
+Table schedules {
+  id bigint [pk]
+  name varchar
+  year integer
+  deadline_at datetime
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '面談を実施する期間の設定'
+}
+
+Table meeting_slots {
+  id bigint [pk]
+  teacher_id bigint [not null]
+  schedule_id bigint
+  start_at datetime
+  end_at datetime
+  status integer [not null, default: 0, note: 'enum: available(0) / reserved(1) / blocked(2)']
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '面談枠（日時ごとの1コマ）'
+}
+
+Table assignments {
+  id bigint [pk]
+  child_id bigint
+  meeting_slot_id bigint
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    (child_id, meeting_slot_id) [unique]
+  }
+  Note: '面談枠に割り当てられた児童の記録'
+}
+
+Table family_availabilities {
+  id bigint [pk]
+  family_id bigint
+  meeting_slot_id bigint
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  Note: '保護者が提出した、面談に参加できる日時'
+}
+
+Table assignment_notifications {
+  id bigint [pk]
+  child_id bigint [not null]
+  meeting_slot_id bigint [not null]
+  sent_at datetime [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    (child_id, meeting_slot_id) [unique]
+  }
+  Note: '面談確定メールの送信記録（二重送信防止）'
+}
+
+// users とは has_one の 1対1（DB上の外部キー制約はなし）
+Ref: teachers.user_id - users.id
+Ref: families.user_id - users.id
+
+Ref: children.family_id > families.id
+Ref: children.schedule_id > schedules.id
+Ref: class_rooms.teacher_id > teachers.id
+Ref: child_class_rooms.child_id > children.id
+Ref: child_class_rooms.class_room_id > class_rooms.id
+Ref: meeting_slots.teacher_id > teachers.id
+Ref: meeting_slots.schedule_id > schedules.id
+Ref: assignments.child_id > children.id
+Ref: assignments.meeting_slot_id > meeting_slots.id
+Ref: family_availabilities.family_id > families.id
+Ref: family_availabilities.meeting_slot_id > meeting_slots.id
+Ref: assignment_notifications.child_id > children.id
+Ref: assignment_notifications.meeting_slot_id > meeting_slots.id
